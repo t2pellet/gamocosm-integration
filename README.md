@@ -1,8 +1,10 @@
-# Fabric Example Mod
+# Gamocosm Starter
 
 ## Setup
 
-For setup instructions please see the [fabric wiki page](https://fabricmc.net/wiki/tutorial:setup) that relates to the IDE that you are using.
+Simple mod, populates server list with Gamocosm server based on server ID and API Key set in config file
+
+On join, if the server is off it will turn it on.
 
 ## License
 
