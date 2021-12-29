@@ -66,7 +66,7 @@ public class GamocosmServer {
             Optional<InetSocketAddress> optional = AllowedAddressResolver.DEFAULT
                     .resolve(ServerAddress.parse(address))
                     .map(Address::getInetSocketAddress);
-            socket.connect(optional.get(), 5000);
+            socket.connect(optional.get(), 2500);
             socket.close();
             return true;
         } catch (Exception ignore) {
