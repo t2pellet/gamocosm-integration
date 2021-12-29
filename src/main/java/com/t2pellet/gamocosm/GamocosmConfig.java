@@ -1,44 +1,36 @@
 package com.t2pellet.gamocosm;
 
-import com.t2pellet.gamocosm.io.Config;
-import net.minecraft.client.network.ServerInfo;
+import me.shedaniel.autoconfig.AutoConfig;
+import me.shedaniel.autoconfig.ConfigData;
+import me.shedaniel.autoconfig.annotation.Config;
+import me.shedaniel.autoconfig.annotation.ConfigEntry;
+import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
+import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.Comment;
 
-import java.io.IOException;
+@Config(name = Gamocosm.ID)
+public class GamocosmConfig implements ConfigData {
 
-public class GamocosmConfig extends Config {
-
+    @ConfigEntry.Gui.Excluded
     private static GamocosmConfig instance;
 
     public static GamocosmConfig getInstance() {
         if (instance == null) {
-            try {
-                instance = new GamocosmConfig();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
+            AutoConfig.register(GamocosmConfig.class, JanksonConfigSerializer::new);
+            instance = AutoConfig.getConfigHolder(GamocosmConfig.class).getConfig();
         }
         return instance;
     }
 
-    private GamocosmConfig() throws IOException, IllegalAccessException {
-        super("gamocosm");
-    }
+    @Comment("Desired name for Gamocosm server in servers tab")
+    public String name = "Gamocosm Server";
 
-    @Section("core")
-    public static class Core {
-        @Section.Comment("Desired name for gamocosm server")
-        private static String name;
-        @Section.Comment("Your gamocosm server ID")
-        private static String id;
-        @Section.Comment("Your gamocosm server API key")
-        private static String key;
+    @Comment("Gamocosm server ID")
+    public String id = "";
 
-        public static String getName() {
-            return name;
-        }
+    @Comment("Gamocosm server API key")
+    public String key = "";
 
-        public static String getURL() {
-            return "https://gamocosm.com/servers/" + id + "/api/" + key + "/";
-        }
+    public String getURL() {
+        return "https://gamocosm.com/servers/" + id + "/api/" + key + "/";
     }
 }
