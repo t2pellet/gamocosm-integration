@@ -2,6 +2,7 @@ package com.t2pellet.gamocosm.rest;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.t2pellet.gamocosm.Gamocosm;
 import com.t2pellet.gamocosm.GamocosmConfig;
 import net.minecraft.client.network.Address;
 import net.minecraft.client.network.AllowedAddressResolver;
@@ -40,7 +41,7 @@ public class GamocosmServer {
             try {
                 var json = getJson();
                 var address = json.get("domain").getAsString();
-                var name = GamocosmConfig.Core.getName();
+                var name = Gamocosm.CONFIG.name;
                 instance = new GamocosmServer(address, name);
             } catch (IOException ex) {
                 ex.printStackTrace();
@@ -51,7 +52,7 @@ public class GamocosmServer {
 
     private static JsonObject getJson() throws IOException {
         CloseableHttpClient client = HttpClients.createDefault();
-        HttpGet get = new HttpGet(GamocosmConfig.Core.getURL() + "status");
+        HttpGet get = new HttpGet(Gamocosm.CONFIG.getURL() + "status");
         var response = client.execute(get);
         var entity = response.getEntity();
         var string = EntityUtils.toString(entity);
@@ -103,7 +104,7 @@ public class GamocosmServer {
     public void startHost() throws IOException {
       if (getStatus() == Status.OFF) {
           var client = HttpClients.createDefault();
-          var post = new HttpPost(GamocosmConfig.Core.getURL() + "start");
+          var post = new HttpPost(Gamocosm.CONFIG.getURL() + "start");
           client.execute(post).close();
           client.close();
       }
@@ -116,9 +117,9 @@ public class GamocosmServer {
         CloseableHttpClient client = HttpClients.createDefault();
         HttpPost post;
         if (status == Status.HOSTED) {
-            post = new HttpPost(GamocosmConfig.Core.getURL() + "resume");
+            post = new HttpPost(Gamocosm.CONFIG.getURL() + "resume");
         } else  {
-            post = new HttpPost(GamocosmConfig.Core.getURL() + "start");
+            post = new HttpPost(Gamocosm.CONFIG.getURL() + "start");
         }
         client.execute(post).close();
         client.close();
