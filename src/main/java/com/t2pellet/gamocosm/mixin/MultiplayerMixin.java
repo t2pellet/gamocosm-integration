@@ -1,19 +1,23 @@
 package com.t2pellet.gamocosm.mixin;
 
 import com.t2pellet.gamocosm.Gamocosm;
+import com.t2pellet.gamocosm.GamocosmScreen;
 import com.t2pellet.gamocosm.rest.GamocosmServer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
+import net.minecraft.client.network.ServerAddress;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.text.Text;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.io.File;
@@ -64,4 +68,14 @@ public class MultiplayerMixin extends Screen {
 		};
 		thread.start();
 	}
+
+	// Use my GamocosmScreen instead of the original ConnectScreen
+	@Redirect(method = "connect(Lnet/minecraft/client/network/ServerInfo;)V",
+			at = @At(
+					value = "INVOKE",
+					target = "Lnet/minecraft/client/gui/screen/ConnectScreen;connect(Lnet/minecraft/client/gui/screen/Screen;Lnet/minecraft/client/MinecraftClient;Lnet/minecraft/client/network/ServerAddress;Lnet/minecraft/client/network/ServerInfo;)V"))
+	private void connectMixin(Screen screen, MinecraftClient client, ServerAddress address, @Nullable ServerInfo info) {
+		GamocosmScreen.connect(screen, client, address, info);
+	}
+
 }

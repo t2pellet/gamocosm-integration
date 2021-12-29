@@ -6,11 +6,12 @@ import org.apache.logging.log4j.Logger;
 
 public class Gamocosm implements ModInitializer {
 
-	public static final Logger LOGGER = LogManager.getLogger("modid");
+	public static final String ID = "gamocosm";
+	public static final Logger LOGGER = LogManager.getLogger(ID);
 	public static final GamocosmConfig CONFIG = GamocosmConfig.getInstance();
 
 	@Override
 	public void onInitialize() {
-		LOGGER.info("Hello Fabric world!");
+		LOGGER.info("Gamocosm integration is here! :)");
 	}
 }
