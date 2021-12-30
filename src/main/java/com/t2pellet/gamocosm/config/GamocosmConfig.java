@@ -1,5 +1,6 @@
-package com.t2pellet.gamocosm;
+package com.t2pellet.gamocosm.config;
 
+import com.t2pellet.gamocosm.Gamocosm;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;

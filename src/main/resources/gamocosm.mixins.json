@@ -6,7 +6,8 @@
   "mixins": [
   ],
   "client": [
-    "MultiplayerMixin"
+    "MultiplayerMixin",
+    "MultiplayerWidgetMixin"
   ],
   "injectors": {
     "defaultRequire": 1
