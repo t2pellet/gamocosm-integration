@@ -1,17 +1,9 @@
-//
-// Source code recreated from a .class file by IntelliJ IDEA
-// (powered by FernFlower decompiler)
-//
-
-package com.t2pellet.gamocosm;
+package com.t2pellet.gamocosm.ui;
 
 import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketTimeoutException;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.t2pellet.gamocosm.rest.GamocosmServer;
+import com.t2pellet.gamocosm.network.GamocosmServer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -20,29 +12,17 @@ import net.minecraft.client.gui.screen.DisconnectedScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ScreenTexts;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.network.Address;
-import net.minecraft.client.network.AllowedAddressResolver;
-import net.minecraft.client.network.ClientLoginNetworkHandler;
 import net.minecraft.client.network.ServerAddress;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.util.NarratorManager;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.network.ClientConnection;
-import net.minecraft.network.NetworkState;
-import net.minecraft.network.packet.c2s.handshake.HandshakeC2SPacket;
-import net.minecraft.network.packet.c2s.login.LoginHelloC2SPacket;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Util;
 import net.minecraft.util.logging.UncaughtExceptionLogger;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
-
-import javax.net.SocketFactory;
 
 // Same as ConnectScreen, except for gamocosm instance
 // For gamocosm instance, if its off, waits for it to turn on with visual indication
@@ -51,10 +31,6 @@ import javax.net.SocketFactory;
 public class GamocosmScreen extends Screen {
     private static final AtomicInteger CONNECTOR_THREADS_COUNT = new AtomicInteger(0);
     static final Logger LOGGER = LogManager.getLogger();
-    private static final long NARRATOR_INTERVAL = 2000L;
-    public static final Text BLOCKED_HOST_TEXT = new TranslatableText("disconnect.genericReason", new Object[]{new TranslatableText("disconnect.unknownHost")});
-    @Nullable
-    volatile ClientConnection connection;
     volatile boolean connectingCancelled;
     final Screen parent;
     private Text status = new TranslatableText("gamocosm.connect.checking");
@@ -65,21 +41,19 @@ public class GamocosmScreen extends Screen {
         this.parent = parent;
     }
 
-    public static void connect(Screen screen, MinecraftClient client, ServerAddress address, @Nullable ServerInfo info) {
+    public static void connect(Screen screen, MinecraftClient client, ServerAddress address, GamocosmServerInfo info) {
         try {
             var serverStatus = GamocosmServer.get();
             if (address.getAddress().equals(serverStatus.address)) {
                 GamocosmScreen connectScreen = new GamocosmScreen(screen);
                 client.disconnect();
                 client.loadBlockList();
-                client.setCurrentServerEntry(info);
+                client.setCurrentServerEntry(new ServerInfo(info.getName(), info.getAddress(), false));
                 client.setScreen(connectScreen);
                 connectScreen.connect(client, address);
-            } else {
-                ConnectScreen.connect(screen, client, address, info);
             }
         } catch (Exception ex) {
-            ConnectScreen.connect(screen, client, address, info);
+            LOGGER.error("Error connecting to gamocosm server: " + ex.getMessage());
         }
     }
 
@@ -87,7 +61,6 @@ public class GamocosmScreen extends Screen {
         LOGGER.info("Connecting to {}, {}", address.getAddress(), address.getPort());
         Thread thread = new Thread("Server Connector #" + CONNECTOR_THREADS_COUNT.incrementAndGet()) {
             public void run() {
-                InetSocketAddress inetSocketAddress = null;
                 try {
                     if (GamocosmScreen.this.connectingCancelled) {
                         return;
@@ -131,7 +104,7 @@ public class GamocosmScreen extends Screen {
                     }
 
                     //Connect
-                    MinecraftClient.getInstance().execute(() -> {
+                    client.execute(() -> {
                         ConnectScreen.connect(parent, MinecraftClient.getInstance(), address, MinecraftClient.getInstance().getCurrentServerEntry());
                     });
                 } catch (Exception var6) {
@@ -151,7 +124,7 @@ public class GamocosmScreen extends Screen {
                     GamocosmScreen.LOGGER.error("Couldn't connect to server", var6);
                     String exception = exception2.getMessage();
                     client.execute(() -> {
-                        client.setScreen(new DisconnectedScreen(GamocosmScreen.this.parent, ScreenTexts.CONNECT_FAILED, new TranslatableText("disconnect.genericReason", new Object[]{exception})));
+                        client.setScreen(new DisconnectedScreen(GamocosmScreen.this.parent, ScreenTexts.CONNECT_FAILED, new TranslatableText("disconnect.genericReason", exception)));
                     });
                 }
 
@@ -160,22 +133,6 @@ public class GamocosmScreen extends Screen {
         thread.setUncaughtExceptionHandler(new UncaughtExceptionLogger(LOGGER));
         thread.start();
     }
-
-    private void setStatus(Text status) {
-        this.status = status;
-    }
-
-    public void tick() {
-        if (this.connection != null) {
-            if (this.connection.isOpen()) {
-                this.connection.tick();
-            } else {
-                this.connection.handleDisconnection();
-            }
-        }
-
-    }
-
     public boolean shouldCloseOnEsc() {
         return false;
     }
@@ -183,10 +140,6 @@ public class GamocosmScreen extends Screen {
     protected void init() {
         this.addDrawableChild(new ButtonWidget(this.width / 2 - 100, this.height / 4 + 120 + 12, 200, 20, ScreenTexts.CANCEL, (button) -> {
             this.connectingCancelled = true;
-            if (this.connection != null) {
-                this.connection.disconnect(new TranslatableText("connect.aborted"));
-            }
-
             this.client.setScreen(this.parent);
         }));
     }

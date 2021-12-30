@@ -1,6 +1,6 @@
 {
   "gamocosm.menu.gamocosm": "Gamocosm Server",
   "gamocosm.connect.hosting": "Server is setting up... this can take up to 5min",
-  "gamocosm.connect.starting": "Server is starting... this can take up to 1min",
+  "gamocosm.connect.starting": "Server is starting... this can take up to 2min",
   "gamocosm.connect.checking": "Contacting the server..."
 }

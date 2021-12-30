@@ -15,7 +15,7 @@
   "license": "CC0-1.0",
   "icon": "assets/gamocosm/icon.png",
 
-  "environment": "*",
+  "environment": "client",
   "entrypoints": {
     "main": [
       "com.t2pellet.gamocosm.Gamocosm"

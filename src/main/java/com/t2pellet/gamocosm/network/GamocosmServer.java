@@ -1,13 +1,11 @@
-package com.t2pellet.gamocosm.rest;
+package com.t2pellet.gamocosm.network;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.t2pellet.gamocosm.Gamocosm;
-import com.t2pellet.gamocosm.GamocosmConfig;
 import net.minecraft.client.network.Address;
 import net.minecraft.client.network.AllowedAddressResolver;
 import net.minecraft.client.network.ServerAddress;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -96,7 +94,7 @@ public class GamocosmServer {
 
     public void updateStatus() throws IOException {
         var json = GamocosmServer.getJson();
-        gameStarted = json.get("server").getAsBoolean();
+        gameStarted = json.get("server").getAsBoolean() && json.get("status").isJsonNull();
         canPing = gameStarted && getCanPing(address);
         hasGotStatus = true;
     }
