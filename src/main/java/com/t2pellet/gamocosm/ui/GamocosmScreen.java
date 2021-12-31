@@ -1,12 +1,14 @@
 package com.t2pellet.gamocosm.ui;
 
 import java.net.InetSocketAddress;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.t2pellet.gamocosm.network.GamocosmServer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.ConnectScreen;
 import net.minecraft.client.gui.screen.DisconnectedScreen;
 import net.minecraft.client.gui.screen.Screen;
@@ -153,6 +155,15 @@ public class GamocosmScreen extends Screen {
         }
 
         drawCenteredText(matrices, this.textRenderer, this.status, this.width / 2, this.height / 2 - 50, 16777215);
+
+        // Loading anim
+        String string = switch ((int) (Util.getMeasuringTimeMs() / 300L % 4L)) {
+            case 1, 3 -> "o O o";
+            case 2 -> "o o O";
+            default -> "O o o";
+        };
+        drawCenteredText(matrices, this.textRenderer, string, this.width / 2, this.height / 2, 8421504);
+
         super.render(matrices, mouseX, mouseY, delta);
     }
 }
