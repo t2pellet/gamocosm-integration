@@ -54,9 +54,7 @@ public class MultiplayerWidgetMixin extends AlwaysSelectedEntryListWidget<Multip
     private void updateEntriesMixin(CallbackInfo info) {
         this.gamocosmServers.forEach(gamocosmServer -> {
             this.addEntry(gamocosmServer);
-            Gamocosm.LOGGER.info("Added gamocosm server entry: " + gamocosmServer.getServerEntry().getName());
         });
     }
-
 
 }

@@ -25,10 +25,10 @@ public class GamocosmConfig implements ConfigData {
     @Comment("Desired name for Gamocosm server in servers tab")
     public String name = "Gamocosm Server";
 
-    @Comment("Gamocosm server ID")
+    @Comment("Gamocosm server ID. Found in URL for your gamocosm server")
     public String id = "";
 
-    @Comment("Gamocosm server API key")
+    @Comment("Gamocosm server API key. Found in advanced settings for your gamocosm server")
     public String key = "";
 
     public String getURL() {

@@ -1,5 +1,6 @@
 package com.t2pellet.gamocosm.network;
 
+import com.t2pellet.gamocosm.Gamocosm;
 import com.t2pellet.gamocosm.ui.GamocosmServerEntryList;
 
 public class GamocosmServerPopulator extends Thread {
@@ -13,7 +14,15 @@ public class GamocosmServerPopulator extends Thread {
 
     @Override
     public void run() {
-        var server = GamocosmServer.get();
-        servers.addServer(server.address, server.name);
+        while (!this.isInterrupted()) {
+            try {
+                var server = GamocosmServer.get();
+                servers.addServer(server.address, server.name);
+                Gamocosm.LOGGER.info("Successfully populated gamocosm server");
+                break;
+            } catch (Exception ex) {
+                Gamocosm.LOGGER.warn("Failed getting gamocosm server. Retrying...");
+            }
+        }
     }
 }
