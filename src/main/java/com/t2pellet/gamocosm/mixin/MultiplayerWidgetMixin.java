@@ -1,14 +1,13 @@
 package com.t2pellet.gamocosm.mixin;
 
 import com.google.common.collect.Lists;
+import com.t2pellet.gamocosm.network.GamocosmServer;
 import com.t2pellet.gamocosm.ui.GamocosmServerEntry;
-import com.t2pellet.gamocosm.ui.GamocosmServerInfo;
 import com.t2pellet.gamocosm.ui.GamocosmWidget;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerServerListWidget;
 import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget;
-import net.minecraft.client.util.math.MatrixStack;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -39,11 +38,11 @@ public class MultiplayerWidgetMixin extends AlwaysSelectedEntryListWidget<Multip
     }
 
     @Override
-    public void setGamocosmServers(List<GamocosmServerInfo> gamocosmServers) {
+    public void setGamocosmServers(List<GamocosmServer> gamocosmServers) {
         this.gamocosmServers.clear();
-        Iterator<GamocosmServerInfo> iterator = gamocosmServers.iterator();
+        Iterator<GamocosmServer> iterator = gamocosmServers.iterator();
         while (iterator.hasNext()) {
-            GamocosmServerInfo gamocosmServerInfo = iterator.next();
+            GamocosmServer gamocosmServerInfo = iterator.next();
             this.gamocosmServers.add(new GamocosmServerEntry(this.screen, gamocosmServerInfo));
         }
 

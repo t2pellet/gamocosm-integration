@@ -30,20 +30,17 @@ public class GamocosmServer {
     public final String name;
     private boolean gameStarted;
     private boolean canPing;
-    private boolean hasGotStatus;
 
     private static GamocosmServer instance;
 
-    public static GamocosmServer get() {
+    public static GamocosmServer get() throws IOException {
         if (instance == null) {
-            try {
-                var json = getJson();
-                var address = json.get("domain").getAsString();
-                var name = Gamocosm.CONFIG.name;
-                instance = new GamocosmServer(address, name);
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+            var json = getJson();
+            var address = json.get("domain").getAsString();
+            var name = Gamocosm.CONFIG.name;
+            instance = new GamocosmServer(address, name);
+            instance.gameStarted = json.get("server").getAsBoolean() && json.get("status").isJsonNull();
+            instance.canPing = instance.gameStarted && getCanPing(address);
         }
         return instance;
     }
@@ -78,29 +75,33 @@ public class GamocosmServer {
         this.name = name;
         this.gameStarted = false;
         this.canPing = false;
-        this.hasGotStatus = false;
     }
 
-    public Status getStatus() throws IOException {
-        return getStatus(true);
+    public String getName() {
+        return name;
     }
 
-    public Status getStatus(boolean shouldUpdate) throws IOException {
-        if (shouldUpdate || !hasGotStatus) {
-            updateStatus();
-        }
+    public String getAddress() {
+        return address;
+    }
+
+    public Status getStatus() {
         return gameStarted ? (canPing ? Status.ON : Status.HOSTED) : Status.OFF;
+    }
+
+    public Status getUpdatedStatus() throws IOException {
+        updateStatus();
+        return getStatus();
     }
 
     public void updateStatus() throws IOException {
         var json = GamocosmServer.getJson();
         gameStarted = json.get("server").getAsBoolean() && json.get("status").isJsonNull();
         canPing = gameStarted && getCanPing(address);
-        hasGotStatus = true;
     }
 
     public void startHost() throws IOException {
-      if (getStatus() == Status.OFF) {
+      if (getUpdatedStatus() == Status.OFF) {
           var client = HttpClients.createDefault();
           var post = new HttpPost(Gamocosm.CONFIG.getURL() + "start");
           client.execute(post).close();
@@ -109,7 +110,7 @@ public class GamocosmServer {
     }
 
     public void startGame() throws IOException {
-        var status = getStatus();
+        var status = getUpdatedStatus();
         if (status == Status.ON) return;
 
         CloseableHttpClient client = HttpClients.createDefault();

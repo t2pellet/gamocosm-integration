@@ -17,7 +17,7 @@ public class GamocosmServerPopulator extends Thread {
         while (!this.isInterrupted()) {
             try {
                 var server = GamocosmServer.get();
-                servers.addServer(server.address, server.name);
+                servers.addServer(server);
                 Gamocosm.LOGGER.info("Successfully populated gamocosm server");
                 break;
             } catch (Exception ex) {

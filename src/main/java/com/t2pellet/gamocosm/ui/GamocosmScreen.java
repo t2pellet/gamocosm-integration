@@ -43,23 +43,21 @@ public class GamocosmScreen extends Screen {
         this.parent = parent;
     }
 
-    public static void connect(Screen screen, MinecraftClient client, ServerAddress address, GamocosmServerInfo info) {
+    public static void connect(Screen screen, MinecraftClient client, GamocosmServer server) {
         try {
-            var serverStatus = GamocosmServer.get();
-            if (address.getAddress().equals(serverStatus.address)) {
-                GamocosmScreen connectScreen = new GamocosmScreen(screen);
-                client.disconnect();
-                client.loadBlockList();
-                client.setCurrentServerEntry(new ServerInfo(info.getName(), info.getAddress(), false));
-                client.setScreen(connectScreen);
-                connectScreen.connect(client, address);
-            }
+            GamocosmScreen connectScreen = new GamocosmScreen(screen);
+            client.disconnect();
+            client.loadBlockList();
+            client.setCurrentServerEntry(new ServerInfo(server.getName(), server.getAddress(), false));
+            client.setScreen(connectScreen);
+            connectScreen.connect(client, server);
         } catch (Exception ex) {
             LOGGER.error("Error connecting to gamocosm server: " + ex.getMessage());
         }
     }
 
-    private void connect(MinecraftClient client, ServerAddress address) {
+    private void connect(MinecraftClient client, GamocosmServer server) {
+        ServerAddress address = ServerAddress.parse(server.getAddress());
         LOGGER.info("Connecting to {}, {}", address.getAddress(), address.getPort());
         Thread thread = new Thread("Server Connector #" + CONNECTOR_THREADS_COUNT.incrementAndGet()) {
             public void run() {
@@ -69,9 +67,8 @@ public class GamocosmScreen extends Screen {
                     }
 
                     // Start host if off
-                    var server = GamocosmServer.get();
                     server.startHost();
-                    if (server.getStatus(false) == GamocosmServer.Status.OFF) {
+                    if (server.getStatus() == GamocosmServer.Status.OFF) {
                         status = new TranslatableText("gamocosm.connect.hosting");
                     }
 
@@ -80,7 +77,7 @@ public class GamocosmScreen extends Screen {
                     }
 
                     // Wait for host to turn on
-                    while (server.getStatus(false) == GamocosmServer.Status.OFF) {
+                    while (server.getStatus() == GamocosmServer.Status.OFF) {
                         Thread.sleep(1000);
                         if (GamocosmScreen.this.connectingCancelled) {
                             return;
@@ -97,7 +94,7 @@ public class GamocosmScreen extends Screen {
 
                     // Wait for server start
                     status = new TranslatableText("gamocosm.connect.starting");
-                    while (server.getStatus(false) != GamocosmServer.Status.ON) {
+                    while (server.getStatus() != GamocosmServer.Status.ON) {
                         server.updateStatus();
                     }
 
