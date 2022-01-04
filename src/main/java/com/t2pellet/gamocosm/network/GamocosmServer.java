@@ -34,16 +34,12 @@ public class GamocosmServer {
 
     private static GamocosmServer instance;
 
-    public static GamocosmServer get() {
+    public static GamocosmServer get() throws IOException {
         if (instance == null) {
-            try {
-                var json = getJson();
-                var address = json.get("domain").getAsString();
-                var name = Gamocosm.CONFIG.name;
-                instance = new GamocosmServer(address, name);
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+            var json = getJson();
+            var address = json.get("domain").getAsString();
+            var name = Gamocosm.CONFIG.name;
+            instance = new GamocosmServer(address, name);
         }
         return instance;
     }
@@ -81,15 +77,21 @@ public class GamocosmServer {
         this.hasGotStatus = false;
     }
 
-    public Status getStatus() throws IOException {
-        return getStatus(true);
+    public String getName() {
+        return name;
     }
 
-    public Status getStatus(boolean shouldUpdate) throws IOException {
-        if (shouldUpdate || !hasGotStatus) {
-            updateStatus();
-        }
+    public String getAddress() {
+        return address;
+    }
+
+    public Status getStatus() {
         return gameStarted ? (canPing ? Status.ON : Status.HOSTED) : Status.OFF;
+    }
+
+    public Status getUpdatedStatus() throws IOException {
+        updateStatus();
+        return getStatus();
     }
 
     public void updateStatus() throws IOException {
@@ -100,7 +102,7 @@ public class GamocosmServer {
     }
 
     public void startHost() throws IOException {
-      if (getStatus() == Status.OFF) {
+      if (getUpdatedStatus() == Status.OFF) {
           var client = HttpClients.createDefault();
           var post = new HttpPost(Gamocosm.CONFIG.getURL() + "start");
           client.execute(post).close();
@@ -109,7 +111,7 @@ public class GamocosmServer {
     }
 
     public void startGame() throws IOException {
-        var status = getStatus();
+        var status = getUpdatedStatus();
         if (status == Status.ON) return;
 
         CloseableHttpClient client = HttpClients.createDefault();

@@ -1,10 +1,10 @@
 package com.t2pellet.gamocosm.mixin;
 
+import com.t2pellet.gamocosm.network.GamocosmServer;
 import com.t2pellet.gamocosm.network.GamocosmServerPopulator;
 import com.t2pellet.gamocosm.ui.*;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
-import net.minecraft.client.network.ServerAddress;
 import net.minecraft.text.Text;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -54,7 +54,7 @@ public class MultiplayerMixin extends Screen {
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/MultiplayerServerListPinger;tick()V"), method = "tick")
     private void tick(CallbackInfo info) {
         if (this.gamocosmServers.needsUpdate()) {
-            List<GamocosmServerInfo> list = this.gamocosmServers.getServers();
+            List<GamocosmServer> list = this.gamocosmServers.getServers();
             this.gamocosmServers.markClean();
             ((GamocosmWidget) this.serverListWidget).setGamocosmServers(list);
         }
@@ -63,9 +63,9 @@ public class MultiplayerMixin extends Screen {
     @Inject(at = @At("TAIL"), method = "connect()V")
     public void connect(CallbackInfo info) {
         MultiplayerServerListWidget.Entry entry = this.serverListWidget.getSelectedOrNull();
-        if (entry instanceof GamocosmServerEntry) {
-            GamocosmServerInfo gamocosmServerInfo = ((GamocosmServerEntry) entry).getServerEntry();
-            GamocosmScreen.connect(this, client, ServerAddress.parse(gamocosmServerInfo.getAddress()), gamocosmServerInfo);
+        if (entry instanceof GamocosmServerEntry gamocosmEntry) {
+            GamocosmServer gamocosmServer = gamocosmEntry.getServer();
+            GamocosmScreen.connect(this, client, gamocosmServer);
         }
     }
 

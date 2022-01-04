@@ -1,6 +1,7 @@
 package com.t2pellet.gamocosm.ui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.t2pellet.gamocosm.network.GamocosmServer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -15,15 +16,17 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Util;
 
+import java.awt.*;
+
 @Environment(EnvType.CLIENT)
 public class GamocosmServerEntry extends MultiplayerServerListWidget.Entry {
 
+    final MinecraftClient client;
+    protected final GamocosmServer server;
     private final MultiplayerScreen screen;
-    protected final MinecraftClient client;
-    protected final GamocosmServerInfo server;
     private long time;
 
-    public GamocosmServerEntry(MultiplayerScreen screen, GamocosmServerInfo server) {
+    public GamocosmServerEntry(MultiplayerScreen screen, GamocosmServer server) {
         this.screen = screen;
         this.server = server;
         this.client = MinecraftClient.getInstance();
@@ -56,7 +59,14 @@ public class GamocosmServerEntry extends MultiplayerServerListWidget.Entry {
 
         var title = Text.of(Formatting.BOLD + this.server.getName());
         DrawableHelper.drawCenteredText(matrices, this.client.textRenderer, title, this.screen.width / 2, y + 5, 16777215);
-        DrawableHelper.drawCenteredText(matrices, this.client.textRenderer, Text.of(this.server.getAddress()), this.screen.width / 2, y + 18, 16777215);
+        int colourIdx;
+        switch (server.getStatus()) {
+            case OFF -> colourIdx = 0xc;
+            case HOSTED -> colourIdx = 0xe;
+            default -> colourIdx = 0xa;
+        }
+        var address = Text.of(Formatting.byColorIndex(colourIdx) + this.server.getAddress());
+        DrawableHelper.drawCenteredText(matrices, this.client.textRenderer, address, this.screen.width / 2, y + 18, 16777215);
     }
 
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
@@ -69,7 +79,7 @@ public class GamocosmServerEntry extends MultiplayerServerListWidget.Entry {
         return false;
     }
 
-    public GamocosmServerInfo getServerEntry() {
+    public GamocosmServer getServer() {
         return this.server;
     }
 
