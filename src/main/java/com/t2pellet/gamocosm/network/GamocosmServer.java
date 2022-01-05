@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class GamocosmServer {
 
@@ -30,18 +31,30 @@ public class GamocosmServer {
     public final String name;
     private boolean gameStarted;
     private boolean canPing;
+    private AtomicBoolean isUpdatingStatus = new AtomicBoolean(false);
 
     private static GamocosmServer instance;
 
     public static GamocosmServer get() throws IOException {
+        // Setup instance
         if (instance == null) {
             var json = getJson();
             var address = json.get("domain").getAsString();
             var name = Gamocosm.CONFIG.name;
             instance = new GamocosmServer(address, name);
-            instance.gameStarted = json.get("server").getAsBoolean() && json.get("status").isJsonNull();
-            instance.canPing = instance.gameStarted && getCanPing(address);
         }
+        // Update status
+        Thread thread = new Thread("Gamocosm Status Update") {
+            @Override
+            public void run() {
+                try {
+                    instance.updateStatus();
+                } catch (IOException ex) {
+                    Gamocosm.LOGGER.error("Failed to update gamocosm server status");
+                }
+            }
+        };
+        thread.start();
         return instance;
     }
 
@@ -62,7 +75,7 @@ public class GamocosmServer {
             Optional<InetSocketAddress> optional = AllowedAddressResolver.DEFAULT
                     .resolve(ServerAddress.parse(address))
                     .map(Address::getInetSocketAddress);
-            socket.connect(optional.get(), 2500);
+            socket.connect(optional.get(), 2000);
             socket.close();
             return true;
         } catch (Exception ignore) {
@@ -89,15 +102,22 @@ public class GamocosmServer {
         return gameStarted ? (canPing ? Status.ON : Status.HOSTED) : Status.OFF;
     }
 
+    public boolean isUpdatingStatus() {
+        return isUpdatingStatus.get();
+    }
+
     public Status getUpdatedStatus() throws IOException {
         updateStatus();
         return getStatus();
     }
 
     public void updateStatus() throws IOException {
+        if (isUpdatingStatus.get()) return;
+        isUpdatingStatus.set(true);
         var json = GamocosmServer.getJson();
         gameStarted = json.get("server").getAsBoolean() && json.get("status").isJsonNull();
         canPing = gameStarted && getCanPing(address);
+        isUpdatingStatus.set(false);
     }
 
     public void startHost() throws IOException {

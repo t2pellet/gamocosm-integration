@@ -57,16 +57,28 @@ public class GamocosmServerEntry extends MultiplayerServerListWidget.Entry {
         RenderSystem.disableBlend();
         RenderSystem.enableTexture();
 
+        // Title
         var title = Text.of(Formatting.BOLD + this.server.getName());
         DrawableHelper.drawCenteredText(matrices, this.client.textRenderer, title, this.screen.width / 2, y + 5, 16777215);
-        int colourIdx;
-        switch (server.getStatus()) {
-            case OFF -> colourIdx = 0xc;
-            case HOSTED -> colourIdx = 0xe;
-            default -> colourIdx = 0xa;
+        // Loading
+        if (getServer().isUpdatingStatus()) {
+            String string = switch ((int) (Util.getMeasuringTimeMs() / 300L % 4L)) {
+                case 1, 3 -> "o O o";
+                case 2 -> "o o O";
+                default -> "O o o";
+            };
+            DrawableHelper.drawCenteredText(matrices, this.client.textRenderer, string, this.screen.width / 2, y + 18, 8421504);
+        } // Address
+        else {
+            int colourIdx;
+            switch (server.getStatus()) {
+                case OFF -> colourIdx = 0xc;
+                case HOSTED -> colourIdx = 0xe;
+                default -> colourIdx = 0xa;
+            }
+            var address = Text.of(Formatting.byColorIndex(colourIdx) + this.server.getAddress());
+            DrawableHelper.drawCenteredText(matrices, this.client.textRenderer, address, this.screen.width / 2, y + 18, 16777215);
         }
-        var address = Text.of(Formatting.byColorIndex(colourIdx) + this.server.getAddress());
-        DrawableHelper.drawCenteredText(matrices, this.client.textRenderer, address, this.screen.width / 2, y + 18, 16777215);
     }
 
     public boolean mouseClicked(double mouseX, double mouseY, int button) {

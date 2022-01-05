@@ -132,6 +132,7 @@ public class GamocosmScreen extends Screen {
         thread.setUncaughtExceptionHandler(new UncaughtExceptionLogger(LOGGER));
         thread.start();
     }
+
     public boolean shouldCloseOnEsc() {
         return false;
     }
