@@ -1,30 +1,25 @@
 package com.t2pellet.gamocosm.ui;
 
-import java.net.InetSocketAddress;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.t2pellet.gamocosm.network.GamocosmServer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.ConnectScreen;
 import net.minecraft.client.gui.screen.DisconnectedScreen;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.ScreenTexts;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.network.ServerAddress;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.util.NarratorManager;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Util;
 import net.minecraft.util.logging.UncaughtExceptionLogger;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 // Same as ConnectScreen, except for gamocosm instance
 // For gamocosm instance, if its off, waits for it to turn on with visual indication
@@ -32,10 +27,10 @@ import org.jetbrains.annotations.Nullable;
 @Environment(EnvType.CLIENT)
 public class GamocosmScreen extends Screen {
     private static final AtomicInteger CONNECTOR_THREADS_COUNT = new AtomicInteger(0);
-    static final Logger LOGGER = LogManager.getLogger();
+    static final Logger LOGGER = LoggerFactory.getLogger(GamocosmScreen.class);
     volatile boolean connectingCancelled;
     final Screen parent;
-    private Text status = new TranslatableText("gamocosm.connect.checking");
+    private Text status = Text.translatable("gamocosm.connect.checking");
     private long lastNarrationTime = -1L;
 
     public GamocosmScreen(Screen parent) {
@@ -69,7 +64,7 @@ public class GamocosmScreen extends Screen {
                     // Start host if off
                     server.startHost();
                     if (server.getStatus() == GamocosmServer.Status.OFF) {
-                        status = new TranslatableText("gamocosm.connect.hosting");
+                        status = Text.translatable("gamocosm.connect.hosting");
                     }
 
                     if (GamocosmScreen.this.connectingCancelled) {
@@ -93,7 +88,7 @@ public class GamocosmScreen extends Screen {
                     server.startGame();
 
                     // Wait for server start
-                    status = new TranslatableText("gamocosm.connect.starting");
+                    status = Text.translatable("gamocosm.connect.starting");
                     while (server.getStatus() != GamocosmServer.Status.ON) {
                         server.updateStatus();
                     }
@@ -123,7 +118,7 @@ public class GamocosmScreen extends Screen {
                     GamocosmScreen.LOGGER.error("Couldn't connect to server", var6);
                     String exception = exception2.getMessage();
                     client.execute(() -> {
-                        client.setScreen(new DisconnectedScreen(GamocosmScreen.this.parent, ScreenTexts.CONNECT_FAILED, new TranslatableText("disconnect.genericReason", exception)));
+                        client.setScreen(new DisconnectedScreen(GamocosmScreen.this.parent, ScreenTexts.CONNECT_FAILED, Text.translatable("disconnect.genericReason", exception)));
                     });
                 }
 
@@ -149,7 +144,7 @@ public class GamocosmScreen extends Screen {
         long l = Util.getMeasuringTimeMs();
         if (l - this.lastNarrationTime > 2000L) {
             this.lastNarrationTime = l;
-            NarratorManager.INSTANCE.narrate(new TranslatableText("narrator.joining"));
+            MinecraftClient.getInstance().getNarratorManager().narrate(Text.translatable("narrator.joining"));
         }
 
         drawCenteredText(matrices, this.textRenderer, this.status, this.width / 2, this.height / 2 - 50, 16777215);

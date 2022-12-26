@@ -1,13 +1,17 @@
 package com.t2pellet.gamocosm.mixin;
 
+import com.mojang.logging.LogUtils;
 import com.t2pellet.gamocosm.network.GamocosmServer;
 import com.t2pellet.gamocosm.network.GamocosmServerPopulator;
-import com.t2pellet.gamocosm.ui.*;
+import com.t2pellet.gamocosm.ui.GamocosmScreen;
+import com.t2pellet.gamocosm.ui.GamocosmServerEntry;
+import com.t2pellet.gamocosm.ui.GamocosmServerEntryList;
+import com.t2pellet.gamocosm.ui.GamocosmWidget;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
+import net.minecraft.client.gui.screen.multiplayer.MultiplayerServerListWidget;
 import net.minecraft.text.Text;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -15,15 +19,15 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import net.minecraft.client.gui.screen.multiplayer.MultiplayerServerListWidget;
 
 import java.util.List;
 
 @Mixin(MultiplayerScreen.class)
 public class MultiplayerMixin extends Screen {
 
+    @Final
     @Shadow
-    private static final Logger LOGGER = LogManager.getLogger();
+    private static final Logger LOGGER = LogUtils.getLogger();
 
     @Unique
     private GamocosmServerEntryList gamocosmServers;

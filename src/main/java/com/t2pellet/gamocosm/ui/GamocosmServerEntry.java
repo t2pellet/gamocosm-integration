@@ -10,13 +10,9 @@ import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerServerListWidget;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Util;
-
-import java.awt.*;
 
 @Environment(EnvType.CLIENT)
 public class GamocosmServerEntry extends MultiplayerServerListWidget.Entry {
@@ -96,7 +92,7 @@ public class GamocosmServerEntry extends MultiplayerServerListWidget.Entry {
     }
 
     public Text getNarration() {
-        return new TranslatableText("narrator.select", (new LiteralText("")).append(server.getName()));
+        return Text.translatable("narrator.select", server.getName());
     }
 }
 
